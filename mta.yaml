@@ -1,0 +1,58 @@
+ID: new_demo
+_schema-version: '2.1'
+parameters:
+  deploy_mode: html5-repo
+version: 0.0.1
+modules:
+  - name: new-demo-approuter
+    type: approuter.nodejs
+    path: new-demo-approuter
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: new_demo_html5_repo_runtime
+      - name: uaa_new_demo
+  - name: new_demo_ui_deployer
+    type: com.sap.html5.application-content
+    path: new_demo_ui_deployer
+    requires:
+      - name: new_demo_html5_repo_host
+    build-parameters:
+      requires:
+        - name: new_demo
+          artifacts:
+            - './*'
+          target-path: resources/new_demo
+  - name: new_demo
+    type: html5
+    path: new_demo
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+      supported-platforms: []
+      build-result: dist
+resources:
+  - name: new_demo_html5_repo_runtime
+    parameters:
+      service-plan: app-runtime
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: new_demo_html5_repo_host
+    parameters:
+      service-plan: app-host
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: uaa_new_demo
+    parameters:
+      path: ./xs-security.json
+      service-plan: application
+      service: xsuaa
+    type: org.cloudfoundry.managed-service
+  - name: dest_new_demo
+    parameters:
+      service-plan: lite
+      service: destination
+    type: org.cloudfoundry.managed-service
